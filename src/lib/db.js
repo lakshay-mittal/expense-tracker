@@ -3,6 +3,7 @@ const STORAGE_KEYS = {
   CATEGORIES: "et_categories",
   SETTINGS: "et_settings",
   TRIPS: "et_trips",
+  BUDGETS: "et_budgets", // New storage for historical budgets
 };
 
 const DEFAULT_CATEGORIES = [
@@ -86,11 +87,13 @@ export const db = {
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   },
 
-  addTrip: (name) => {
+  addTrip: (name, startDate = null, endDate = null) => {
     const trips = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRIPS) || "[]");
     const newTrip = {
       id: crypto.randomUUID(),
       name,
+      startDate,
+      endDate,
       status: 'active',
       created_at: new Date().toISOString(),
     };
@@ -99,15 +102,25 @@ export const db = {
     return newTrip;
   },
 
+  updateTrip: (id, updates) => {
+    const trips = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRIPS) || "[]");
+    const index = trips.findIndex(t => t.id === id);
+    if (index === -1) return { error: "Trip not found" };
+
+    trips[index] = { ...trips[index], ...updates, updated_at: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify(trips));
+    return { data: trips[index], error: null };
+  },
+
   deleteTrip: (id) => {
     const trips = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRIPS) || "[]");
     const filteredTrips = trips.filter(t => t.id !== id);
     localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify(filteredTrips));
 
-    // Also unlink transactions from this trip (keep the transactions, just remove the link)
+    // CASCADE DELETE: Remove all transactions linked to this trip
     const txs = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSACTIONS) || "[]");
-    const updatedTxs = txs.map(tx => tx.trip_id === id ? { ...tx, trip_id: null } : tx);
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(updatedTxs));
+    const filteredTxs = txs.filter(tx => tx.trip_id !== id);
+    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(filteredTxs));
 
     return { error: null };
   },
@@ -121,9 +134,9 @@ export const db = {
     return cats.filter(c => c.type === type);
   },
 
+  // SETTINGS & BUDGET METHODS
   getSettings: () => {
     const defaultSettings = {
-      monthlyBudget: 0,
       currency: "₹",
       defaultView: "expense"
     };
@@ -137,10 +150,43 @@ export const db = {
     return newData;
   },
 
+  getBudgetForMonth: (yearMonth) => {
+    // yearMonth format: "YYYY-M" (e.g., "2026-6" for July as JS months are 0-indexed)
+    const budgets = JSON.parse(localStorage.getItem(STORAGE_KEYS.BUDGETS) || "{}");
+
+    // Exact match
+    if (budgets[yearMonth] !== undefined) return budgets[yearMonth];
+
+    // Fallback logic: find the most recent budget set BEFORE this month
+    const keys = Object.keys(budgets).sort(); // Sort chronological
+    let lastBudget = 0;
+
+    for (const key of keys) {
+      const [year, month] = key.split('-').map(Number);
+      const [targetYear, targetMonth] = yearMonth.split('-').map(Number);
+
+      if (year < targetYear || (year === targetYear && month <= targetMonth)) {
+        lastBudget = budgets[key];
+      } else {
+        break;
+      }
+    }
+
+    return lastBudget;
+  },
+
+  updateBudget: (yearMonth, amount) => {
+    const budgets = JSON.parse(localStorage.getItem(STORAGE_KEYS.BUDGETS) || "{}");
+    budgets[yearMonth] = amount;
+    localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify(budgets));
+    return budgets;
+  },
+
   clearAllData: () => {
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS);
     localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     localStorage.removeItem(STORAGE_KEYS.TRIPS);
+    localStorage.removeItem(STORAGE_KEYS.BUDGETS);
     window.location.reload();
   }
 };
@@ -153,6 +199,19 @@ const initDB = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.TRIPS)) {
     localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.BUDGETS)) {
+    localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify({}));
+  }
+
+  // Migration: if old monthlyBudget exists in settings, move it to current month in budgets
+  const settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || "{}");
+  if (settings.monthlyBudget !== undefined) {
+    const now = new Date();
+    const key = `${now.getFullYear()}-${now.getMonth()}`;
+    db.updateBudget(key, settings.monthlyBudget);
+    delete settings.monthlyBudget;
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   }
 
   db.cleanupOldData();

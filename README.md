@@ -1,73 +1,54 @@
-# 💎 Expense Tracker Pro: The Offline-First Financial Companion
+# 💎 Expense Tracker Pro: The Premium Offline Financial Suite
 
-A premium, high-performance financial management application built with **React**, **Vite**, and **Capacitor**. Designed for ultimate privacy and speed, this app functions 100% offline, storing all your data directly on your device.
+A high-end, high-performance financial management ecosystem built with **React 19**, **Vite 8**, and **Capacitor 6**. Engineered for absolute privacy, the application functions 100% offline, leveraging a custom local database architecture.
 
 ![Build Status](https://img.shields.io/badge/Status-Complete-emerald)
 ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Web-blue)
-![Offline](https://img.shields.io/badge/Network-100%25%20Offline-orange)
+![Privacy](https://img.shields.io/badge/Privacy-100%25%20Offline-orange)
 
-## ✨ Core Features
+## ✨ Advanced Product Ecosystem
 
-### 🏦 Triple-Pillar Financial Tracking
-Manage your entire financial life in one place with three dedicated views:
-- **Expenses**: Detailed spending breakdown with categories like Food, Commute, and Shopping.
-- **Investments**: Track professional assets including Mutual Funds, Stocks, Fixed Deposits, and Gold.
-- **Income**: Log Salary, Side Hustles, and other revenue streams.
+### 🏦 Triple-Pillar Architecture
+Sophisticated categorization across three distinct financial sectors, each with its own contextual flow:
+- **Expenses**: Intuitive spending logs with precision category tiles.
+- **Investments**: Professional asset tracking for **Mutual Funds**, **Stocks**, **FD**, and **Gold**.
+- **Income**: Revenue stream management for Salary and Side Hustles.
 
-### 🥧 Dynamic Visualization
-- **Interactive Pie Charts**: Real-time category breakdowns for every financial pillar.
-- **Calendar-Aware Dashboard**: Automatically tracks the current month and year.
-- **Monthly Auto-Refresh**: Seamlessly handles transitions between calendar months.
+### 🥧 High-Intelligence Visualization
+- **Contextual Pie Charts**: Dynamic visualizations for each financial pillar.
+- **Percentage Insights**: Deep analytical tooltips displaying each category's weight relative to monthly totals.
+- **Time-Capsule Snapshots**: Automatically detects system month/year with an interactive 12-month historical selector.
 
-### ✈️ Trips Management
-- **Journey Tracking**: Create dedicated cards for specific trips (e.g., "Europe 2025").
-- **Trip-Specific Totals**: See exactly how much you've spent on a particular adventure.
-- **Integrated Tagging**: Trip-linked expenses are automatically tagged in your main activity list.
+### ✈️ Journey & Trip Intelligence
+- **Bespoke Trip Management**: Create destination-based containers with specific **Start and End dates**.
+- **Automated Cascade Cleanup**: Deleting a trip intelligently purges all associated transactions, maintaining database integrity.
+- **Unified Tagging**: Trip-linked expenses are visually badged in the main timeline for seamless cross-referencing.
 
-### 🛠️ Advanced Management
-- **Full Edit/Delete Flow**: Click any transaction in your timeline to modify or remove it.
-- **Backdating Support**: Log expenses for past dates with an integrated date picker.
-- **12-Month Sliding Window**: Smart database management that automatically retains only the last 12 months of data to keep performance snappy.
+### 🛡️ Historical Budget Integrity
+- **Non-Destructive Budgeting**: Changes to monthly limits only affect current and future periods, perfectly preserving your historical snapshots.
+- **Budget Health Indicator**: Real-time progress bar on the dashboard with threshold alerts.
 
-### ⚙️ Personal Pro Settings
-- **Professional Export**: Download your data as formatted **Excel (.xlsx)** or **CSV** files directly from the app.
-- **Monthly Budgeting**: Set spending limits and track progress with a dynamic "Budget Health" bar.
-- **Factory Reset**: Securely wipe all local data with a single click.
+### ⚙️ Professional Operations
+- **Spreadsheet Archiving**: Generate and download production-grade **Excel (.xlsx)** or **CSV** backups directly from the device.
+- **12-Month Sliding Window**: Built-in intelligence that automatically maintains a rolling year of data for optimal performance.
+- **Full Transaction Lifecycle**: Integrated support for backdating, editing, and permanent deletion of any log.
 
-## 💎 Premium UI/UX
-- **Glassmorphism Design**: High-end blurred backgrounds and sophisticated semi-transparent borders.
-- **Balanced Navigation**: A sleek floating bottom dock for Home, Trips, and quick logging.
-- **Native Experience**: Standard top-right settings access for a professional mobile feel.
+## 📐 Bespoke Premium UI
+- **Concave Navigation Dock**: A custom-engineered SVG dock that flows elegantly around the central action button.
+- **Glassmorphism 2.0**: High-density background blurs and soft-border gradients for a luxurious mobile experience.
+- **Native Navigation**: Standardized top-right settings access following premium mobile design patterns.
 
-## 🚀 Technical Stack
+## 🚀 Technical Architecture
 - **Frontend**: React 19 + Tailwind CSS 4
-- **Icons**: Lucide React
-- **Charts**: Recharts
-- **Mobile Wrapper**: Capacitor 6 (Android)
-- **Persistence**: 100% Offline LocalStorage Data Layer
-- **Build Tool**: Vite 8
+- **Visualization**: Recharts (with custom high-precision formatters)
+- **Data Engine**: JSON-serialized LocalStorage with Hierarchical Schema
+- **Spreadsheet Engine**: Integrated `xlsx` library
+- **Native Bridge**: Capacitor 6 for 100% local Android execution
 
 ## 📱 Installation (Android)
-1. Download the latest `expense-tracker-offline.apk`.
-2. Transfer the file to your Android device.
-3. Enable "Install from Unknown Sources" in your settings.
-4. Open the APK and enjoy your private financial companion.
-
-## 👨‍💻 Development
-```bash
-# Install dependencies
-npm install
-
-# Start the dev server (HTTP for easy browser testing)
-npm run dev
-
-# Build the web project
-npm run build
-
-# Sync and Build the Android APK
-npx cap sync
-cd android && ./gradlew assembleDebug
-```
+1. Transfer `expense-tracker-offline.apk` to your phone.
+2. Enable "Unknown Sources" in your Android security settings.
+3. Install and experience a truly private financial companion.
 
 ---
-*Built for privacy. No cloud. No tracking. Just your finances, simplified.*
+*Built for the individual. No cloud. No tracking. Just your finances, beautifully managed.*

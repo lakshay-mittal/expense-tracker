@@ -115,14 +115,18 @@ export default function Dashboard({ transactions, isLoading, onRefresh }) {
 
   // 4. Budget Calculation
   const budgetProgress = useMemo(() => {
-    if (!settings.monthlyBudget || settings.monthlyBudget <= 0) return null;
+    const monthKey = `${selectedOption.year}-${selectedOption.month}`;
+    const monthlyBudget = db.getBudgetForMonth(monthKey);
+
+    if (!monthlyBudget || monthlyBudget <= 0) return null;
+
     const currentMonthExpenses = monthTransactions
       .filter(tx => tx.flow_type === "expense")
       .reduce((acc, tx) => acc + tx.amount, 0);
-    const percentage = Math.min((currentMonthExpenses / settings.monthlyBudget) * 100, 100);
-    const remaining = Math.max(settings.monthlyBudget - currentMonthExpenses, 0);
-    return { percentage, remaining, spent: currentMonthExpenses };
-  }, [monthTransactions, settings, selectedOption]);
+    const percentage = Math.min((currentMonthExpenses / monthlyBudget) * 100, 100);
+    const remaining = Math.max(monthlyBudget - currentMonthExpenses, 0);
+    return { percentage, remaining, spent: currentMonthExpenses, limit: monthlyBudget };
+  }, [monthTransactions, selectedOption]);
 
   if (isLoading) {
     return (
@@ -188,7 +192,10 @@ export default function Dashboard({ transactions, isLoading, onRefresh }) {
               <Tooltip
                 contentStyle={{ backgroundColor: '#111827', border: '1px solid #374151', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
                 itemStyle={{ color: '#F3F4F6', fontSize: '12px', fontWeight: 'bold' }}
-                formatter={(value) => `₹${value.toLocaleString("en-IN")}`}
+                formatter={(value, name) => {
+                  const percentage = typeTotal > 0 ? ((value / typeTotal) * 100).toFixed(1) : 0;
+                  return [`₹${value.toLocaleString("en-IN")} (${percentage}%)`, name];
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -237,7 +244,7 @@ export default function Dashboard({ transactions, isLoading, onRefresh }) {
                 Limit
               </span>
               <span className="text-xs font-black text-white">
-                ₹{budgetProgress.remaining.toLocaleString("en-IN")} <span className="text-gray-500 text-[10px]">Left</span>
+                ₹{budgetProgress.remaining.toLocaleString("en-IN")} <span className="text-gray-500 text-[10px]">Left of ₹{budgetProgress.limit.toLocaleString("en-IN")}</span>
               </span>
             </div>
             <div className="w-full bg-gray-950 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner">

@@ -7,11 +7,6 @@ export default function Layout({ children, onRefresh }) {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const navItems = [
-    { path: "/", icon: Home, label: "Home" },
-    { path: "/trips", icon: Plane, label: "Trips" },
-  ];
-
   const handleTransactionAdded = () => {
     onRefresh();
     setIsModalOpen(false);
@@ -24,45 +19,75 @@ export default function Layout({ children, onRefresh }) {
         {children}
       </main>
 
-      {/* Premium Bottom Navigation */}
-      <div className="fixed bottom-6 left-6 right-6 z-50">
-        <nav className="bg-gray-900/60 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] flex items-center justify-between px-8 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          {/* Home */}
-          <Link
-            to="/"
-            className={`flex flex-col items-center gap-1 transition-all duration-300 ${
-              location.pathname === "/" ? "text-emerald-400" : "text-gray-500 hover:text-gray-300"
-            }`}
+      {/* Bespoke Custom-Shaped Navigation Dock */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-8 px-8 pointer-events-none">
+        <div className="relative w-full max-w-[400px] pointer-events-auto">
+          {/* Custom SVG Background with Concave Notch */}
+          <svg
+            viewBox="0 0 400 100"
+            className="absolute bottom-0 w-full h-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] filter"
+            preserveAspectRatio="none"
           >
-            <div className={`p-2 rounded-2xl transition-all duration-300 ${location.pathname === "/" ? "bg-emerald-500/10" : ""}`}>
-              <Home size={22} strokeWidth={location.pathname === "/" ? 2.5 : 2} />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.1em]">Home</span>
-          </Link>
+            <defs>
+              <linearGradient id="navGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(17, 24, 39, 0.95)" />
+                <stop offset="50%" stopColor="rgba(31, 41, 55, 0.9)" />
+                <stop offset="100%" stopColor="rgba(17, 24, 39, 0.95)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0,40
+                 C0,20 20,20 40,20
+                 L140,20
+                 C150,20 155,20 165,30
+                 C175,45 185,60 200,60
+                 C215,60 225,45 235,30
+                 C245,20 250,20 260,20
+                 L360,20
+                 C380,20 400,20 400,40
+                 L400,100 L0,100 Z"
+              fill="url(#navGradient)"
+              className="backdrop-blur-3xl"
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth="0.5"
+            />
+          </svg>
 
-          {/* Central Add Button */}
-          <div className="relative -top-8">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-gradient-to-tr from-emerald-600 to-emerald-400 text-white rounded-3xl p-5 shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.4)] transition-all active:scale-90 flex items-center justify-center group"
+          {/* Navigation Items */}
+          <nav className="relative h-[100px] flex items-end justify-between px-10 pb-4">
+            {/* Home */}
+            <Link
+              to="/"
+              className={`flex flex-col items-center gap-1 transition-all duration-500 mb-1 ${
+                location.pathname === "/" ? "text-emerald-400 scale-110" : "text-gray-500 hover:text-gray-300"
+              }`}
             >
-              <Plus size={32} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
-            </button>
-          </div>
+              <Home size={22} strokeWidth={location.pathname === "/" ? 2.5 : 2} />
+              <span className="text-[8px] font-black uppercase tracking-[0.2em]">Home</span>
+            </Link>
 
-          {/* Trips */}
-          <Link
-            to="/trips"
-            className={`flex flex-col items-center gap-1 transition-all duration-300 ${
-              location.pathname === "/trips" ? "text-indigo-400" : "text-gray-500 hover:text-gray-300"
-            }`}
-          >
-            <div className={`p-2 rounded-2xl transition-all duration-300 ${location.pathname === "/trips" ? "bg-indigo-500/10" : ""}`}>
-              <Plane size={22} strokeWidth={location.pathname === "/trips" ? 2.5 : 2} />
+            {/* Central FAB - Perfectly nested in the concave notch */}
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-[35px]">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-gradient-to-tr from-emerald-600 to-emerald-400 text-white rounded-2xl p-4 shadow-[0_10px_25px_rgba(16,185,129,0.4)] transition-all active:scale-90 flex items-center justify-center border border-white/10 group"
+              >
+                <Plus size={28} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+              </button>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.1em]">Trips</span>
-          </Link>
-        </nav>
+
+            {/* Trips */}
+            <Link
+              to="/trips"
+              className={`flex flex-col items-center gap-1 transition-all duration-500 mb-1 ${
+                location.pathname === "/trips" ? "text-indigo-400 scale-110" : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              <Plane size={22} strokeWidth={location.pathname === "/trips" ? 2.5 : 2} />
+              <span className="text-[8px] font-black uppercase tracking-[0.2em]">Trips</span>
+            </Link>
+          </nav>
+        </div>
       </div>
 
       {/* The Transaction Modal */}

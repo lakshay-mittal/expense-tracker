@@ -62,12 +62,20 @@ export default function TransactionModal({
       setSelectedTripId(editingTransaction.trip_id || null);
     } else {
       setAmount("");
+      // Default to expense, especially if a trip is preselected
       setFlowType("expense");
       setActiveCategoryId(null);
       setDate(new Date().toISOString().split('T')[0]);
       setSelectedTripId(preselectedTripId || null);
     }
   }, [editingTransaction, preselectedTripId, isOpen]);
+
+  // Force flowType to expense if a trip is selected
+  useEffect(() => {
+    if (selectedTripId) {
+      setFlowType("expense");
+    }
+  }, [selectedTripId]);
 
   const availableCategories = useMemo(() => {
     return db.getCategoriesByType(flowType);
@@ -120,7 +128,7 @@ export default function TransactionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end bg-black/80 backdrop-blur-sm">
       <div className="flex-1" onClick={onClose}></div>
 
       <div className="bg-gray-900 w-full rounded-t-[2.5rem] border-t border-gray-800 p-8 pb-10 shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -192,29 +200,31 @@ export default function TransactionModal({
           />
         </div>
 
-        {/* Top Type Toggle */}
-        <div className="flex bg-gray-800/50 p-1.5 rounded-2xl mb-8 border border-gray-800">
-          {["expense", "income", "investment"].map((type) => (
-            <button
-              key={type}
-              onClick={() => {
-                setFlowType(type);
-                setActiveCategoryId(null);
-              }}
-              className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
-                flowType === type
-                  ? type === "expense"
-                    ? "bg-red-500 text-white shadow-lg"
-                    : type === "investment"
-                    ? "bg-indigo-500 text-white shadow-lg"
-                    : "bg-emerald-500 text-white shadow-lg"
-                  : "text-gray-500"
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
+        {/* Top Type Toggle - Only show if NO trip is selected */}
+        {!selectedTripId && (
+          <div className="flex bg-gray-800/50 p-1.5 rounded-2xl mb-8 border border-gray-800">
+            {["expense", "income", "investment"].map((type) => (
+              <button
+                key={type}
+                onClick={() => {
+                  setFlowType(type);
+                  setActiveCategoryId(null);
+                }}
+                className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  flowType === type
+                    ? type === "expense"
+                      ? "bg-red-500 text-white shadow-lg"
+                      : type === "investment"
+                      ? "bg-indigo-500 text-white shadow-lg"
+                      : "bg-emerald-500 text-white shadow-lg"
+                    : "text-gray-500"
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Category Grid */}
         <div className="grid grid-cols-3 gap-4 mb-8">

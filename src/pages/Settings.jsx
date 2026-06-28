@@ -8,25 +8,28 @@ import {
   FileText,
   Table,
   CircleDollarSign,
-  ArrowLeft
+  ArrowLeft,
+  Calendar
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { db } from "../lib/db";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [settings, setSettings] = useState(db.getSettings());
   const [budgetInput, setBudgetInput] = useState("");
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${now.getMonth()}`;
+  const currentMonthName = now.toLocaleString("default", { month: "long", year: "numeric" });
 
   useEffect(() => {
-    setBudgetInput(settings.monthlyBudget.toString());
-  }, [settings]);
+    const currentBudget = db.getBudgetForMonth(currentMonthKey);
+    setBudgetInput(currentBudget.toString());
+  }, []);
 
   const handleUpdateBudget = () => {
     const amount = parseFloat(budgetInput) || 0;
-    const updated = db.updateSettings({ monthlyBudget: amount });
-    setSettings(updated);
-    alert("Limit updated successfully");
+    db.updateBudget(currentMonthKey, amount);
+    alert(`Budget for ${currentMonthName} and future months updated!`);
   };
 
   const handleExport = (format) => {
@@ -83,6 +86,12 @@ export default function Settings() {
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Monthly Spending Limit</h2>
           </div>
           <div className="bg-gray-900/30 border border-white/5 rounded-[2.5rem] p-7">
+            <div className="flex items-center justify-between mb-4 px-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-2">
+                    <Calendar size={12} />
+                    Current Month: {currentMonthName}
+                </span>
+            </div>
             <div className="flex items-center bg-gray-950 rounded-2xl px-5 py-4 border border-white/5 mb-5 shadow-inner">
               <span className="text-gray-600 font-bold mr-3 text-lg">₹</span>
               <input
@@ -97,8 +106,11 @@ export default function Settings() {
               onClick={handleUpdateBudget}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-3xl uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-emerald-600/10 transition-all active:scale-95"
             >
-              Update Limit
+              Update for {now.toLocaleString("default", { month: "short" })} & Future
             </button>
+            <p className="text-[9px] text-center text-gray-600 mt-4 italic font-medium px-4">
+                * Changes only affect current and upcoming months. Previous months remain unchanged.
+            </p>
           </div>
         </section>
 
