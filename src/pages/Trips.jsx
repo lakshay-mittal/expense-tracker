@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Plane,
   Plus,
@@ -96,7 +97,12 @@ export default function Trips({ transactions, onRefresh }) {
       <header className="px-6 pt-8 pb-4 flex justify-between items-center shrink-0">
         <div className="w-10"></div>
         <h1 className="text-xl font-black uppercase tracking-[0.3em] text-white">Trips</h1>
-        <SettingsIcon className="text-gray-600 w-10 h-10 p-2.5" /> {/* Spacer/Symmetry placeholder */}
+        <Link
+          to="/settings"
+          className="p-2.5 bg-gray-900/50 border border-white/5 rounded-2xl text-gray-400 hover:text-white transition-all hover:bg-gray-800"
+        >
+          <SettingsIcon size={20} />
+        </Link>
       </header>
 
       <div className="flex-1 overflow-y-auto px-6 pb-40">
