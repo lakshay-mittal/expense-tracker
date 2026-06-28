@@ -41,10 +41,11 @@ export default function TransactionModal({
   onClose,
   onTransactionAdded,
   editingTransaction = null,
-  preselectedTripId = null, // Can be passed to auto-link a trip
+  preselectedTripId = null,
+  defaultType = "expense", // Received from Layout context
 }) {
   const [amount, setAmount] = useState("");
-  const [flowType, setFlowType] = useState("expense");
+  const [flowType, setFlowType] = useState(defaultType);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTripId, setSelectedTripId] = useState(null);
@@ -62,13 +63,12 @@ export default function TransactionModal({
       setSelectedTripId(editingTransaction.trip_id || null);
     } else {
       setAmount("");
-      // Default to expense, especially if a trip is preselected
-      setFlowType("expense");
+      setFlowType(defaultType); // Default to current dashboard view
       setActiveCategoryId(null);
       setDate(new Date().toISOString().split('T')[0]);
       setSelectedTripId(preselectedTripId || null);
     }
-  }, [editingTransaction, preselectedTripId, isOpen]);
+  }, [editingTransaction, preselectedTripId, isOpen, defaultType]);
 
   // Force flowType to expense if a trip is selected
   useEffect(() => {

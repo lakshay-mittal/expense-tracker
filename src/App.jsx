@@ -9,6 +9,7 @@ import { db } from "./lib/db";
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("expense"); // Shared state for context-aware entry
 
   useEffect(() => {
     fetchTransactions();
@@ -28,7 +29,7 @@ function App() {
 
   return (
     <Router>
-      <Layout onRefresh={fetchTransactions}>
+      <Layout onRefresh={fetchTransactions} activeTab={activeTab}>
         <Routes>
           <Route
             path="/"
@@ -37,6 +38,8 @@ function App() {
                 transactions={transactions}
                 isLoading={isLoading}
                 onRefresh={fetchTransactions}
+                activeType={activeTab}
+                setActiveType={setActiveTab}
               />
             }
           />

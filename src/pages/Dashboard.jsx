@@ -53,7 +53,7 @@ const COLORS = {
   income: ["#10B981", "#34D399", "#059669", "#065F46", "#064E3B"],
 };
 
-export default function Dashboard({ transactions, isLoading, onRefresh }) {
+export default function Dashboard({ transactions, isLoading, onRefresh, activeType, setActiveType }) {
   // 1. Month Selector Logic
   const monthOptions = useMemo(() => {
     const options = [];
@@ -71,7 +71,6 @@ export default function Dashboard({ transactions, isLoading, onRefresh }) {
   }, []);
 
   const [selectedMonthValue, setSelectedMonthValue] = useState(monthOptions[0].value);
-  const [activeType, setActiveType] = useState("expense");
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [settings, setSettings] = useState(db.getSettings());
 

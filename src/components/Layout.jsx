@@ -3,9 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Plus, Plane } from "lucide-react";
 import TransactionModal from "./TransactionModal";
 
-export default function Layout({ children, onRefresh }) {
+export default function Layout({ children, onRefresh, activeTab }) {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const navItems = [
+    { path: "/", icon: Home, label: "Home" },
+    { path: "/trips", icon: Plane, label: "Trips" },
+  ];
 
   const handleTransactionAdded = () => {
     onRefresh();
@@ -19,7 +24,7 @@ export default function Layout({ children, onRefresh }) {
         {children}
       </main>
 
-      {/* Bespoke Custom-Shaped Navigation Dock */}
+      {/* Premium Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-8 px-8 pointer-events-none">
         <div className="relative w-full max-w-[400px] pointer-events-auto">
           {/* Custom SVG Background with Concave Notch */}
@@ -95,6 +100,7 @@ export default function Layout({ children, onRefresh }) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onTransactionAdded={handleTransactionAdded}
+        defaultType={activeTab} // Pass the context-aware type here
       />
     </div>
   );
