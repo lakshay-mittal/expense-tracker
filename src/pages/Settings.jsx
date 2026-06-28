@@ -12,6 +12,9 @@ import {
   Calendar
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+import { Capacitor } from "@capacitor/core";
 import { db } from "../lib/db";
 
 export default function Settings() {
@@ -32,7 +35,7 @@ export default function Settings() {
     alert(`Budget for ${currentMonthName} and future months updated!`);
   };
 
-  const handleExport = (format) => {
+  const handleExport = async (format) => {
     const transactions = db.getTransactions();
     if (transactions.length === 0) {
       alert("No data found");
@@ -47,14 +50,43 @@ export default function Settings() {
       Trip: tx.trip?.name || ""
     }));
 
+    const fileName = `Finance_Backup_${new Date().toISOString().split('T')[0]}.${format}`;
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
 
-    if (format === "xlsx") {
-      XLSX.writeFile(workbook, `Finance_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
-    } else {
-      XLSX.writeFile(workbook, `Finance_Backup_${new Date().toISOString().split('T')[0]}.csv`, { bookType: "csv" });
+    try {
+      if (Capacitor.isNativePlatform()) {
+        // NATIVE FLOW: Write to filesystem and share
+        const base64Data = XLSX.write(workbook, {
+          bookType: format === 'xlsx' ? 'xlsx' : 'csv',
+          type: 'base64'
+        });
+
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache, // Use Cache for temporary sharing
+        });
+
+        await Share.share({
+          title: 'Financial Backup',
+          text: `Here is your expense tracker export (${format.toUpperCase()})`,
+          url: savedFile.uri,
+          dialogTitle: 'Export Data',
+        });
+
+      } else {
+        // BROWSER FLOW: Standard download
+        if (format === "xlsx") {
+          XLSX.writeFile(workbook, fileName);
+        } else {
+          XLSX.writeFile(workbook, fileName, { bookType: "csv" });
+        }
+      }
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert(`Export failed: ${error.message || "Unknown error"}`);
     }
   };
 
@@ -66,7 +98,6 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col h-full bg-gray-950 text-gray-100 overflow-hidden">
-      {/* Premium Top Bar with Back Button */}
       <header className="px-6 pt-8 pb-4 flex justify-between items-center shrink-0">
         <button
           onClick={() => navigate(-1)}
@@ -79,7 +110,6 @@ export default function Settings() {
       </header>
 
       <div className="flex-1 overflow-y-auto px-6 pb-40 mt-4">
-        {/* Budget Section */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-5 px-2">
             <CircleDollarSign size={16} className="text-emerald-500" />
@@ -114,7 +144,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Export Section */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-5 px-2">
             <Download size={16} className="text-indigo-500" />
@@ -155,7 +184,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Danger Zone */}
         <section>
           <div className="flex items-center gap-2 mb-5 px-2">
             <ShieldAlert size={16} className="text-red-500" />
