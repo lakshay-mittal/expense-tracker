@@ -3,8 +3,11 @@ const STORAGE_KEYS = {
   CATEGORIES: "et_categories",
   SETTINGS: "et_settings",
   TRIPS: "et_trips",
-  BUDGETS: "et_budgets", // New storage for historical budgets
+  BUDGETS: "et_budgets",
+  VERSION: "et_app_version", // New storage for version tracking
 };
+
+const APP_VERSION = "1.1.0"; // Increment this to force a clean slate for new major versions
 
 const DEFAULT_CATEGORIES = [
   // Expenses
@@ -192,6 +195,17 @@ export const db = {
 };
 
 const initDB = () => {
+  // 1. Version Guard for Clean Slate
+  const storedVersion = localStorage.getItem(STORAGE_KEYS.VERSION);
+
+  if (!storedVersion || storedVersion !== APP_VERSION) {
+    // If it's a new install or version change, we can force a migration or reset here.
+    // For a professional blank state on new device, no extra action is needed
+    // as localStorage will naturally be empty on the phone.
+    localStorage.setItem(STORAGE_KEYS.VERSION, APP_VERSION);
+  }
+
+  // 2. Initialize Core Schema (Categories)
   localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(DEFAULT_CATEGORIES));
 
   if (!localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)) {
