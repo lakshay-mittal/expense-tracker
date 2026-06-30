@@ -4,10 +4,10 @@ const STORAGE_KEYS = {
   SETTINGS: "et_settings",
   TRIPS: "et_trips",
   BUDGETS: "et_budgets",
-  VERSION: "et_app_version", // New storage for version tracking
+  VERSION: "et_app_version",
 };
 
-const APP_VERSION = "1.1.0"; // Increment this to force a clean slate for new major versions
+const APP_VERSION = "1.2.0"; // Bumped version for theme engine
 
 const DEFAULT_CATEGORIES = [
   // Expenses
@@ -120,16 +120,11 @@ export const db = {
     const filteredTrips = trips.filter(t => t.id !== id);
     localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify(filteredTrips));
 
-    // CASCADE DELETE: Remove all transactions linked to this trip
     const txs = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSACTIONS) || "[]");
     const filteredTxs = txs.filter(tx => tx.trip_id !== id);
     localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(filteredTxs));
 
     return { error: null };
-  },
-
-  getCategories: () => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.CATEGORIES) || "[]");
   },
 
   getCategoriesByType: (type) => {
@@ -141,7 +136,8 @@ export const db = {
   getSettings: () => {
     const defaultSettings = {
       currency: "₹",
-      defaultView: "expense"
+      defaultView: "expense",
+      theme: "emerald" // Default theme
     };
     return JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || JSON.stringify(defaultSettings));
   },
@@ -150,31 +146,29 @@ export const db = {
     const current = db.getSettings();
     const newData = { ...current, ...updates };
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(newData));
+
+    // Apply theme immediately if updated
+    if (updates.theme) {
+        document.documentElement.setAttribute('data-theme', updates.theme);
+    }
+
     return newData;
   },
 
   getBudgetForMonth: (yearMonth) => {
-    // yearMonth format: "YYYY-M" (e.g., "2026-6" for July as JS months are 0-indexed)
     const budgets = JSON.parse(localStorage.getItem(STORAGE_KEYS.BUDGETS) || "{}");
-
-    // Exact match
     if (budgets[yearMonth] !== undefined) return budgets[yearMonth];
-
-    // Fallback logic: find the most recent budget set BEFORE this month
-    const keys = Object.keys(budgets).sort(); // Sort chronological
+    const keys = Object.keys(budgets).sort();
     let lastBudget = 0;
-
     for (const key of keys) {
       const [year, month] = key.split('-').map(Number);
       const [targetYear, targetMonth] = yearMonth.split('-').map(Number);
-
       if (year < targetYear || (year === targetYear && month <= targetMonth)) {
         lastBudget = budgets[key];
       } else {
         break;
       }
     }
-
     return lastBudget;
   },
 
@@ -190,43 +184,24 @@ export const db = {
     localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     localStorage.removeItem(STORAGE_KEYS.TRIPS);
     localStorage.removeItem(STORAGE_KEYS.BUDGETS);
+    localStorage.removeItem(STORAGE_KEYS.VERSION);
     window.location.reload();
   }
 };
 
 const initDB = () => {
-  // 1. Version Guard for Clean Slate
   const storedVersion = localStorage.getItem(STORAGE_KEYS.VERSION);
+  localStorage.setItem(STORAGE_KEYS.VERSION, APP_VERSION);
 
-  if (!storedVersion || storedVersion !== APP_VERSION) {
-    // If it's a new install or version change, we can force a migration or reset here.
-    // For a professional blank state on new device, no extra action is needed
-    // as localStorage will naturally be empty on the phone.
-    localStorage.setItem(STORAGE_KEYS.VERSION, APP_VERSION);
-  }
-
-  // 2. Initialize Core Schema (Categories)
   localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(DEFAULT_CATEGORIES));
 
-  if (!localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)) {
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.TRIPS)) {
-    localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.BUDGETS)) {
-    localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify({}));
-  }
+  if (!localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)) localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE_KEYS.TRIPS)) localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE_KEYS.BUDGETS)) localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify({}));
 
-  // Migration: if old monthlyBudget exists in settings, move it to current month in budgets
-  const settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || "{}");
-  if (settings.monthlyBudget !== undefined) {
-    const now = new Date();
-    const key = `${now.getFullYear()}-${now.getMonth()}`;
-    db.updateBudget(key, settings.monthlyBudget);
-    delete settings.monthlyBudget;
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-  }
+  // Apply stored theme
+  const settings = db.getSettings();
+  document.documentElement.setAttribute('data-theme', settings.theme || 'emerald');
 
   db.cleanupOldData();
 };
